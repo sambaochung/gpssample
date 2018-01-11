@@ -1,13 +1,14 @@
 package com.demo.gps.demo.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
+import com.demo.gps.demo.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,16 +21,13 @@ import com.demo.gps.dao.GPSRepository;
 import com.demo.gps.dao.TrackPointRepository;
 import com.demo.gps.dao.UserRepository;
 import com.demo.gps.dao.WayPointRepository;
-import com.demo.gps.demo.model.GPS;
-import com.demo.gps.demo.model.TrackPoint;
-import com.demo.gps.demo.model.User;
 
 @RestController
 @RequestMapping("/gps")
 public class GPSController {
 	@RequestMapping("/get")
 	public String index() {
-
+		createTestData();
 		return "Greetings from Spring Boot!2333";
 	}
 
@@ -64,7 +62,14 @@ public class GPSController {
 		}
 	}
 
-	public GPS createMap(MultipartFile file, String userName) throws IOException {
+	@RequestMapping(value="/loadUserMap/{userName}", method=RequestMethod.GET)
+	public List<GPS> loadMapByUser(String userName) {
+		List<GPS> gpsList = repository.findListGPSByUser(userName);
+		gpsList.forEach(gps -> {List<TrackPoint> trackPoints = trackPointRepository.findByMapId(gps.getGpsId());
+						addAllTrackPoint(trackPoints, gps);});
+		return gpsList;
+	}
+	private GPS createMap(MultipartFile file, String userName) throws IOException {
 		GPS gps = null;
 		try {
 			gps = loadGPSData(file.getInputStream());
@@ -80,7 +85,7 @@ public class GPSController {
 		return gps;
 	}
 	
-	public User getLatestPositionOnMap(GPS gps) {
+	private User getLatestPositionOnMap(GPS gps) {
 		User user = new User();
 		user.setUserName(gps.getUserName());
 		gps.getTrack().getTrackegments().forEach(trackegment -> {
@@ -101,7 +106,7 @@ public class GPSController {
 		
 	}
 
-	public void addTrackPointForMap(GPS gps) {
+	private void addTrackPointForMap(GPS gps) {
 		gps.getTrack().getTrackegments().forEach(trackegment -> {
 			trackegment.getTrackPoints().forEach(trackPoint -> {
 				trackPoint.setGpsId(gps.getGpsId());
@@ -110,7 +115,7 @@ public class GPSController {
 		});
 	}
 
-	public void addTrackPoint(TrackPoint trackPoint) {
+	private void addTrackPoint(TrackPoint trackPoint) {
 		trackPointRepository.insert(trackPoint);
 	}
 
@@ -130,5 +135,34 @@ public class GPSController {
 			}
 		}
 		return gps;
+	}
+
+	private void addAllTrackPoint(List<TrackPoint> trackPoints, GPS gps) {
+		if(gps!= null) {
+			Track track = new Track();
+			Trackegment segment = new Trackegment();
+			segment.setTrackPoints(trackPoints);
+			track.addTrackSegments(segment);
+			gps.setTrack(track);
+		}
+	}
+
+	private void createTestData() {
+		GPS gps = null;
+		File file = new File("E:\\sample.gpx");
+		try {
+			InputStream in = new FileInputStream(file);
+			gps = loadGPSData(in);
+			gps.setGpxFileName("sample.gpx");
+			gps.setUserName("Sam");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		UUID uuid = UUID.randomUUID();
+		String randomUUIDString = uuid.toString();
+		gps.setGpsId(randomUUIDString);
+		repository.insert(gps);
+		addTrackPointForMap(gps);
+		getLatestPositionOnMap(gps);
 	}
 }

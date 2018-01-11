@@ -33,7 +33,7 @@ public class GPSControllerTest {
     @Test
     public void testUploadMaps() throws Exception {
     	
-    	  File file = new File("D:\\sample.gpx");
+    	  File file = new File("E:\\sample.gpx");
     	  InputStream in = new FileInputStream(file);
     	  byte fileContent[] = new byte[(int)file.length()];
     	  in.read(fileContent);
@@ -48,7 +48,7 @@ public class GPSControllerTest {
     @Test
     public void testUploadMaps2() throws Exception {
     	
-    	  File file = new File("D:\\sample2.gpx");
+    	  File file = new File("E:\\sample.gpx");
     	  InputStream in = new FileInputStream(file);
     	  byte fileContent[] = new byte[(int)file.length()];
     	  in.read(fileContent);
@@ -73,7 +73,7 @@ public class GPSControllerTest {
     	 MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
          mockMvc.perform(MockMvcRequestBuilders.get("/users/latestposition/{name}", "chung"))
                      .andExpect(status().is(200))
-                     .andExpect(content().string("42.2208895 : -1.4580696"));
+                     .andExpect(content().string("42.22087836969921 : -1.4580971002578733"));
     }
     
 
