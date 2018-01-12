@@ -37,11 +37,6 @@ public class GPSRepository {
 		}
 	}
 
-	public GPS findByUser(String userName) {
-		return jdbcTemplate.queryForObject("select * from GPS where userName=?", new Object[] { userName },
-				new GPSRowMapper(GPS.class));
-	}
-	
 	public List<GPS> findListGPSByUser(String userName) {
 		return jdbcTemplate.query("select * from GPS where userName=?", new Object[] { userName },
 				new GPSRowMapper(GPS.class));

@@ -2,6 +2,7 @@ package com.demo.gps.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,8 +32,8 @@ public class WayPointRepository {
 		}
 	}
 
-	public WayPoint findByUser(String gpsId) {
-		return jdbcTemplate.queryForObject("select * from WayPoint where gpsId=?", new Object[] { gpsId },
+	public List<WayPoint> findByUser(String gpsId) {
+		return jdbcTemplate.query("select * from WayPoint where gpsId=?", new Object[] { gpsId },
 				new WayPointRowMapper(WayPoint.class));
 	}
 
